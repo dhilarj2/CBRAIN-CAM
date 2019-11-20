@@ -1,0 +1,32 @@
+# Example training configuration file
+exp_name: 001_VAE_
+#change for Green 
+#data_dir: /local/S.Rasp/preprocessed_data/
+data_dir: data/VerySmallDataset/
+train_fn: 000_train_shuffle.nc
+valid_fn: 000_valid.nc
+norm_fn: 000_norm.nc
+
+#SPCAM3
+#inputs: [QBP, TBP, VBP, PS, SOLIN, SHFLX, LHFLX]
+#outputs: [PHQ, TPHYSTND, FSNT, FSNS, FLNT, FLNS, PRECT]
+#SPCAM5
+inputs: [TBP, QBP, PS, SOLIN, SHFLX, LHFLX]
+outputs: [PRECT]
+
+input_sub: mean
+input_div: maxrs
+#output_dict: /home/s/S.Rasp/repositories/CBRAIN-CAM/nn_config/scale_dicts/002_pnas_scaling.pkl
+output_dict: nn_config/scale_dicts/pnas_exact.pkl
+#output_dict: /fast/gmooers/CBRAIN-CAM/nn_config/scale_dicts/20_002_pnas_scaling.pkl
+encoder_layers: [64,64] 
+decoder_layers: [64,64] 
+
+latent_dim : 64
+
+epochs: 1
+lr_step: 1
+lr_divide : 5
+optimizer : adam
+
+loss: mse
