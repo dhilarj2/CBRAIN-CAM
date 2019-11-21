@@ -9,7 +9,7 @@ from cbrain.imports import *
 from cbrain.utils import *
 from cbrain.losses import *
 from cbrain.data_generator_vae import DataGenerator
-from cbrain.models_new import *
+#from cbrain.models_new import *
 from cbrain.learning_rate_schedule import LRUpdate
 from cbrain.save_weights import save2txt, save_norm
 from tensorflow.keras.callbacks import LearningRateScheduler
@@ -139,19 +139,21 @@ def main(args):
     if args.exp_name is not None:
         exp_dir = args.model_dir + args.exp_name + '/'
         os.makedirs(exp_dir, exist_ok=True)
-        model_fn = exp_dir + 'model_vae'
+        model_fn = exp_dir + 'model_vae.h5'
         logging.info(f'Saving model as {model_fn}')
         #vae.save(model_fn)
-        tf.saved_model.save(vae, exp_dir + "/" + "test/")
+        #tf.saved_model.save(vae, exp_dir + "/" + "test/")
+        vae.save_weights(exp_dir + "/" + "test/", save_format='tf')
+            
         '''
         if args.save_txt:
-            weights_fn = exp_dir + 'vae_weights'
+            weights_fn = exp_dir + 'vae_weights.h5'
             logging.info(f'Saving weights as {weights_fn}')
             vae.save_weights(weights_fn)
             save2txt(weights_fn, exp_dir)
-        '''
-        save_norm(train_gen.input_transform, train_gen.output_transform, exp_dir)
         
+        #save_norm(train_gen.input_transform, train_gen.output_transform, exp_dir)
+        '''
     logging.info('Done!')
 
 
