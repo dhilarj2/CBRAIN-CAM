@@ -16,7 +16,7 @@ from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow.keras.losses import mse
 import json
 from datetime import datetime,date
-
+from cbrain.models_vae import VariationalAutoEncoder
 
 def main(args):
     """Main training script."""
@@ -69,17 +69,43 @@ def main(args):
 
 
 ## change from here
-    
+    '''
     vae = vae_model(
         input_shape= train_gen.n_inputs,
         latent_dim = args.latent_dim,
         encoder_layers = args.encoder_layers,
         decoder_layers = args.decoder_layers,
         activation = args.activation)
+    '''
+    lrs = LearningRateScheduler(LRUpdate(args.lr, args.lr_step, args.lr_divide))
     
+    vae = VariationalAutoEncoder(original_dim = train_gen.n_inputs, intermediate_dim = args.intermediate_dim ,latent_dim = args.latent_dim, activation=args.activation)
+    optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
+    mse_loss_fn = tf.keras.losses.MeanSquaredError()
+
+    loss_metric = tf.keras.metrics.Mean()
+    #vae.compile(optimizer, loss=mse_loss_fn, metr)
+
+    
+    #optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
+
+    #epochs = 3
+
+    #vae = VariationalAutoEncoder(784, 64, 32)
+
+    optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
+
+    vae.compile(optimizer, loss=tf.keras.losses.MeanSquaredError())
+    #vae.fit(x_train, x_train, epochs=3, batch_size=64) 
+
+    vae.fit_generator(
+        train_gen, epochs=args.epochs, validation_data=valid_gen, callbacks=[lrs]
+        )
+
+    '''
     def mse_loss(y_true, y_pred):
         reconstruction_loss = mse(y_true, y_pred)
-        #reconstruction_loss *= original_dim
+        reconstruction_loss *= 64 # vae.get_layer('encoder_input').input_shape
         z_mean = vae.get_layer('encoder').get_layer('z_mean').output
         z_log_var = vae.get_layer('encoder').get_layer('z_log_var').output
         kl_loss = 1 + z_log_var - K.square(z_mean) - K.exp(z_log_var)
@@ -102,7 +128,7 @@ def main(args):
     vae.fit_generator(
         train_gen, epochs=args.epochs, validation_data=valid_gen, callbacks=[lrs]
         )
-
+    '''
     #print(np.array([x[1] for x in valid_gen]).flatten())
     #print(model.predict_generator(valid_gen).flatten())
     # save valid(dev)/ prediction    
@@ -113,17 +139,19 @@ def main(args):
     if args.exp_name is not None:
         exp_dir = args.model_dir + args.exp_name + '/'
         os.makedirs(exp_dir, exist_ok=True)
-        model_fn = exp_dir + 'model_vae.h5'
+        model_fn = exp_dir + 'model_vae'
         logging.info(f'Saving model as {model_fn}')
-        vae.save(model_fn)
-
+        #vae.save(model_fn)
+        tf.saved_model.save(vae, exp_dir + "/" + "test/")
+        '''
         if args.save_txt:
-            weights_fn = exp_dir + 'vae_weights.h5'
+            weights_fn = exp_dir + 'vae_weights'
             logging.info(f'Saving weights as {weights_fn}')
             vae.save_weights(weights_fn)
             save2txt(weights_fn, exp_dir)
-            save_norm(train_gen.input_transform, train_gen.output_transform, exp_dir)
-
+        '''
+        save_norm(train_gen.input_transform, train_gen.output_transform, exp_dir)
+        
     logging.info('Done!')
 
 
@@ -143,8 +171,8 @@ if __name__ == '__main__':
     p.add('--output_dict', type=str, help='Output scaling dictionary.')
     p.add('--var_cut_off', type=json.loads, help='Input variable cut off for upper levels.')
     p.add('--latent_dim', type = int, default = 32, help='Size of the latent vector')
-    p.add('--encoder_layers', type = int, nargs='+', help='Encoder hidden layer sizes.')
-    p.add('--decoder_layers', type = int, nargs='+', help='Decoder hidden layer sizes.')
+    p.add('--intermediate_dim', type = int, nargs='+', help='Intermediate layer sizes.')
+    #p.add('--decoder_layers', type = int, nargs='+', help='Decoder layer sizes.')
 
     p.add('--valid_fn', type=str, default=None, help='File name of training file.')
 

@@ -19,10 +19,9 @@ input_div: maxrs
 #output_dict: /home/s/S.Rasp/repositories/CBRAIN-CAM/nn_config/scale_dicts/002_pnas_scaling.pkl
 output_dict: nn_config/scale_dicts/pnas_exact.pkl
 #output_dict: /fast/gmooers/CBRAIN-CAM/nn_config/scale_dicts/20_002_pnas_scaling.pkl
-encoder_layers: [64,64] 
-decoder_layers: [64,64] 
+intermediate_dim: [64] 
 
-latent_dim : 64
+latent_dim : 12
 
 epochs: 1
 lr_step: 1
