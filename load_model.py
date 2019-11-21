@@ -1,16 +1,29 @@
-from tensorflow.keras.layers import *
-from tensorflow.keras.models import Model, load_model
-from tensorflow.keras.models import model_from_json
-import json
+"""
+Training script.
+
+Created on 2019-01-28-12-21
+Author: Stephan Rasp, raspstephan@gmail.com
+"""
+
+from cbrain.imports import *
+from cbrain.utils import *
+from cbrain.losses import *
+from cbrain.models_vae import VariationalAutoEncoder
 
 
-#with open('saved_models/001_VAE_/model_vae.json') as json_file:
-#    json_config = json_file.read()
+os.environ["CUDA_VISIBLE_DEVICES"] = 'None'
+limit_mem()
+# Hard coded
+vae = VariationalAutoEncoder(original_dim = 65, intermediate_dim = [64] ,latent_dim = 12, activation="LeakyReLU")
 
-#model_from_json(json_config,custom_objects={'LeakyReLU':LeakyReLU},compile = False)
+# Hard coded
+model_fn = 'saved_models/001_VAE_/test/'
+optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
+vae.compile(optimizer, loss=tf.keras.losses.MeanSquaredError())
+vae.train_on_batch(np.array([[0.]*65]))
+vae.load_weights(model_fn)
+vae.summary()
 
-#vae_loaded = load_model("saved_models/001_VAE_/model_vae.h5") #,compile = False,custom_objects={'LeakyReLU':LeakyReLU})
 
 
-import tensorflow as tf
-x = tf.compat.v2.saved_model.load(export_dir = "saved_models/001_VAE_/test/")
+
