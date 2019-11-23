@@ -8,7 +8,7 @@ Author: Stephan Rasp, raspstephan@gmail.com
 from cbrain.imports import *
 from cbrain.utils import *
 from cbrain.losses import *
-from cbrain.data_generator import DataGenerator
+from cbrain.data_generator_dnn_vae import DataGenerator
 from cbrain.models import *
 from cbrain.learning_rate_schedule import LRUpdate
 from cbrain.save_weights import save2txt, save_norm
@@ -42,7 +42,8 @@ def main(args):
         output_transform=out_scale_dict,
         batch_size=args.batch_size,
         shuffle=True,
-        var_cut_off=args.var_cut_off
+        var_cut_off=args.var_cut_off,
+        trained_vae_path="saved_models/001_VAE_/test/"
     )
 
     if args.valid_fn is not None:
@@ -55,7 +56,8 @@ def main(args):
             output_transform=out_scale_dict,
             batch_size=args.batch_size * 10,
             shuffle=False,
-            var_cut_off=args.var_cut_off
+            var_cut_off=args.var_cut_off,
+            trained_vae_path="saved_models/001_VAE_/test/"
         )
     else:
         valid_gen = None

@@ -8,7 +8,8 @@ Author: Stephan Rasp, raspstephan@gmail.com
 from .imports import *
 from .utils import *
 from .normalization import *
-
+from keras.models import load_model
+from train_VAE_v2 import *
 
 class DataGenerator(tf.keras.utils.Sequence):
     """
@@ -19,7 +20,9 @@ class DataGenerator(tf.keras.utils.Sequence):
 
     def __init__(self, data_fn, input_vars, output_vars,
                  norm_fn=None, input_transform=None, output_transform=None,
-                 batch_size=1024, shuffle=True, xarray=False, var_cut_off=None):
+                 batch_size=1024, shuffle=True, xarray=False, var_cut_off=None,
+                 trained_vae_path=None,
+                 ):
         # Just copy over the attributes
         self.data_fn, self.norm_fn = data_fn, norm_fn
         self.input_vars, self.output_vars = input_vars, output_vars
@@ -79,7 +82,27 @@ class DataGenerator(tf.keras.utils.Sequence):
         X = self.input_transform.transform(X)
         Y = self.output_transform.transform(Y)
 
-        return X, Y
+        # Combining data for VAE
+        T = np.concatenate([X, Y], axis=1)
+
+        os.environ["CUDA_VISIBLE_DEVICES"] = 'None'
+        limit_mem()
+        # Hard coded
+        vae = VariationalAutoEncoder(original_dim=65, intermediate_dim=[64], latent_dim=12, activation="LeakyReLU")
+
+        model_fn = 'saved_models/001_VAE_/test/'
+        optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
+        vae.compile(optimizer, loss=tf.keras.losses.MeanSquaredError())
+        vae.train_on_batch(np.array([[0.] * 65]))
+        vae.load_weights(model_fn)
+        # print(vae.predict(np.array([[0.]*65, [0.]*65])))
+        generated_t = vae.predict(T)
+
+        # Return the original X and the random Y
+        X_return = X
+        Y_return = generated_t[:, [64]]
+
+        return X_return, Y_return
 
     def on_epoch_end(self):
         self.indices = np.arange(self.n_batches)
