@@ -129,6 +129,8 @@ def main(args):
         train_gen, epochs=args.epochs, validation_data=valid_gen, callbacks=[lrs]
         )
     '''
+
+
     #print(np.array([x[1] for x in valid_gen]).flatten())
     #print(model.predict_generator(valid_gen).flatten())
     # save valid(dev)/ prediction    
@@ -202,7 +204,7 @@ if __name__ == '__main__':
     p.add('--epochs', type=int, default=10, help='Number of epochs.')
 
     # Save parameters
-    p.add('--exp_name', type=str, default=None, help='Experiment identifier.')
+    p.add('--exp_name', type=str, default="test_dnn_vae", help='Experiment identifier.')
     p.add('--model_dir', type=str, default='./saved_models/', help='Model save path.')
     p.add('--save_txt', dest='save_txt', action='store_true', help='Save F90 txt files.')
     p.set_defaults(save_txt=True)
@@ -211,3 +213,6 @@ if __name__ == '__main__':
 
     args = p.parse_args()
     main(args)
+
+
+
